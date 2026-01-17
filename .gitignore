@@ -1,0 +1,66 @@
+HELP.md
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### Java & Spring Boot ###
+*.class
+*.jar
+*.war
+*.ear
+target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### SECURITY ###
+application.properties
+application-dev.properties
+application-prod.properties
+**/application-*.properties
+*.env
+.env.local
+.env.*.local
+
+# JWT Secret, DB 비밀번호 등
+secrets/
+
+### Logs ###
+logs/
+*.log
+
+### Temporary files ###
+*.tmp
+*.temp
+*.swp
+*.bak

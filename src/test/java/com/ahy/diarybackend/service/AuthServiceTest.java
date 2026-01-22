@@ -113,4 +113,25 @@ public class AuthServiceTest {
         verify(userRepository, never()).save(any(User.class));
     }
 
+    @Test
+    @DisplayName("회원가입 시 기본 Role은 USER")
+    void signup_DefaultRoleIsUser() {
+        // given
+        when(userRepository.existsByUsername(anyString())).thenReturn(false);
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User savedUser = invocation.getArgument(0);
+            assertThat(savedUser.getRole()).isEqualTo(User.Role.USER);
+            return savedUser;
+        });
+        when(jwtUtil.generateToken(any(User.class))).thenReturn("test.jwt.token");
+
+        // when
+        authService.signup(signupRequest);
+
+        // then
+        verify(userRepository).save(argThat(u -> u.getRole() == User.Role.USER));
+    }
+
 }

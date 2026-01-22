@@ -14,7 +14,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -132,6 +137,48 @@ public class AuthServiceTest {
 
         // then
         verify(userRepository).save(argThat(u -> u.getRole() == User.Role.USER));
+    }
+
+    @Test
+    @DisplayName("로그인 성공")
+    void login_Success() {
+        // given
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(user);
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(authentication);
+        when(userRepository.findByUsername(loginRequest.getUsername()))
+                .thenReturn(Optional.of(user));
+        when(jwtUtil.generateToken(any(User.class))).thenReturn("test.jwt.token");
+
+        // when
+        AuthResponse response = authService.login(loginRequest);
+
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.getToken()).isEqualTo("test.jwt.token");
+        assertThat(response.getUsername()).isEqualTo("testuser");
+        assertThat(response.getEmail()).isEqualTo("test@example.com");
+
+        verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(jwtUtil, times(1)).generateToken(any(User.class));
+    }
+
+    @Test
+    @DisplayName("로그인 실패 - 존재하지 않는 사용자")
+    void login_Fail_UserNotFound() {
+        // given
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(user);
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(authentication);
+        when(userRepository.findByUsername(loginRequest.getUsername()))
+                .thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> authService.login(loginRequest))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("아이디 또는 비밀번호가 올바르지 않습니다.");
     }
 
 }

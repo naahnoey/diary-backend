@@ -84,4 +84,33 @@ public class AuthServiceTest {
         verify(jwtUtil, times(1)).generateToken(any(User.class));
     }
 
+    @Test
+    @DisplayName("회원가입 실패 - 중복 아이디")
+    void signup_Fail_DuplicateUsername() {
+        // given
+        when(userRepository.existsByUsername(signupRequest.getUsername())).thenReturn(true);
+
+        // when & then
+        assertThatThrownBy(() -> authService.signup(signupRequest))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("이미 존재하는 아이디입니다.");
+
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("회원가입 실패 - 중복 이메일")
+    void signup_Fail_DuplicateEmail() {
+        // given
+        when(userRepository.existsByUsername(signupRequest.getUsername())).thenReturn(false);
+        when(userRepository.existsByEmail(signupRequest.getEmail())).thenReturn(true);
+
+        // when & then
+        assertThatThrownBy(() -> authService.signup(signupRequest))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("이미 존재하는 이메일입니다.");
+
+        verify(userRepository, never()).save(any(User.class));
+    }
+
 }

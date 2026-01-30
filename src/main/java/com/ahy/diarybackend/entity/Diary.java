@@ -30,6 +30,11 @@ public class Diary {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    // 날씨 (enum 사용)
+    @Enumerated(EnumType.STRING)
+    @Column(length = 50)
+    private Weather weather;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

@@ -1,4 +1,4 @@
-package com.ahy.diarybackend.dto;
+package com.ahy.diarybackend.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

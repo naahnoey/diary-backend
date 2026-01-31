@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -19,6 +20,10 @@ public class Diary {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    // 다이어리 날짜 (달력에서 선택한 날짜)
+    @Column(name = "diary_date", nullable = false)
+    private LocalDate diaryDate;
 
     @Column(nullable = false, length = 200)
     private String title;

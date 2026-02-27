@@ -69,4 +69,21 @@ public class Diary {
         updatedAt = LocalDateTime.now();
     }
 
+    // 태그 편의 메서드
+    public void addTag(Tag tag) {
+        this.tags.add(tag);
+        tag.getDiaries().add(this);
+    }
+
+    public void removeTag(Tag tag) {
+        this.tags.remove(tag);
+        tag.getDiaries().remove(this);
+    }
+
+    public void clearTags() {
+        for (Tag tag : new HashSet<>(tags)) {
+            removeTag(tag);
+        }
+    }
+
 }

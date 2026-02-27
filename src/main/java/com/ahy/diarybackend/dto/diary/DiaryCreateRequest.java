@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 // 다이어리 작성 요청 DTO
 @Getter
@@ -29,5 +30,8 @@ public class DiaryCreateRequest {
     private String content;
 
     private Weather weather;
+
+    @Size(max = 10, message = "태그는 최대 10개까지")
+    private Set<String> tags;
     
 }

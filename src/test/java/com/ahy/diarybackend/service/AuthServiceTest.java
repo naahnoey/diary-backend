@@ -1,8 +1,8 @@
 package com.ahy.diarybackend.service;
 
-import com.ahy.diarybackend.dto.AuthResponse;
-import com.ahy.diarybackend.dto.LoginRequest;
-import com.ahy.diarybackend.dto.SignupRequest;
+import com.ahy.diarybackend.dto.auth.AuthResponse;
+import com.ahy.diarybackend.dto.auth.LoginRequest;
+import com.ahy.diarybackend.dto.auth.SignupRequest;
 import com.ahy.diarybackend.entity.User;
 import com.ahy.diarybackend.repository.UserRepository;
 import com.ahy.diarybackend.security.JwtUtil;
@@ -14,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;

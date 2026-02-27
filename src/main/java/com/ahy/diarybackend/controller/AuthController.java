@@ -1,9 +1,9 @@
 package com.ahy.diarybackend.controller;
 
-import com.ahy.diarybackend.dto.AuthResponse;
-import com.ahy.diarybackend.dto.LoginRequest;
-import com.ahy.diarybackend.dto.MessageResponse;
-import com.ahy.diarybackend.dto.SignupRequest;
+import com.ahy.diarybackend.dto.auth.AuthResponse;
+import com.ahy.diarybackend.dto.auth.LoginRequest;
+import com.ahy.diarybackend.dto.auth.MessageResponse;
+import com.ahy.diarybackend.dto.auth.SignupRequest;
 import com.ahy.diarybackend.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

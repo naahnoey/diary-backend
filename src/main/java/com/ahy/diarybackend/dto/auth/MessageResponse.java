@@ -1,4 +1,4 @@
-package com.ahy.diarybackend.dto;
+package com.ahy.diarybackend.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

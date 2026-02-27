@@ -8,7 +8,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -42,6 +44,11 @@ public class Diary {
     @Column(length = 50)
     private Weather weather;
 
+    // 이미지 (일대다 관계)
+    @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<DiaryImage> images = new ArrayList<>();
+
     // 해시태그 (다대다 관계)
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
@@ -67,6 +74,17 @@ public class Diary {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    // 이미지 편의 메서드
+    public void addImage(DiaryImage image) {
+        this.images.add(image);
+        image.assignDiary(this);
+    }
+
+    public void removeImage(DiaryImage image) {
+        this.images.remove(image);
+        image.assignDiary(null);
     }
 
     // 태그 편의 메서드

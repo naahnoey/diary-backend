@@ -45,4 +45,8 @@ public class DiaryImage {
         uploadDate = LocalDateTime.now();
     }
 
+    protected void assignDiary(Diary diary) {
+        this.diary = diary;
+    }
+
 }

@@ -11,10 +11,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/diaries")
@@ -26,10 +26,11 @@ public class DiaryController {
     @PostMapping("/post")
     public ResponseEntity<?> createDiary(
             @Valid @RequestBody DiaryCreateRequest request,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images,
             @AuthenticationPrincipal UserDetails userDetails    // 현재 로그인 사용자 식별
     ) {
         try {
-            DiaryResponse response = diaryService.createDiary(request, userDetails.getUsername());
+            DiaryResponse response = diaryService.createDiary(request, images, userDetails.getUsername());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest()

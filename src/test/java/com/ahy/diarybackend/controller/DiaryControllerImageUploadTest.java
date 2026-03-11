@@ -3,20 +3,22 @@ package com.ahy.diarybackend.controller;
 import com.ahy.diarybackend.dto.diary.DiaryCreateRequest;
 import com.ahy.diarybackend.dto.diary.DiaryResponse;
 import com.ahy.diarybackend.entity.Weather;
+import com.ahy.diarybackend.security.JwtUtil;
 import com.ahy.diarybackend.service.DiaryService;
 import com.ahy.diarybackend.service.FileStorageService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,13 +26,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
-@WebMvcTest(
-        controllers = DiaryController.class,
-        excludeFilters = @ComponentScan.Filter(
-                type = FilterType.ASSIGNABLE_TYPE,
-                classes = WebSecurityConfiguration.class
-        )
-)
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(controllers = DiaryController.class)
+@AutoConfigureMockMvc(addFilters = false)
 @DisplayName("DiaryController 이미지 업로드 테스트")
 class DiaryControllerImageUploadTest {
 
@@ -40,11 +45,17 @@ class DiaryControllerImageUploadTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockitoBean
+    @MockBean
     private DiaryService diaryService;
 
-    @MockitoBean
+    @MockBean
     private FileStorageService fileStorageService;
+
+    @MockBean
+    private JwtUtil jwtUtil;
+
+    @MockBean
+    private UserDetailsService userDetailsService;
 
     private DiaryCreateRequest diaryRequest;
     private DiaryResponse diaryResponse;
@@ -94,12 +105,55 @@ class DiaryControllerImageUploadTest {
         );
 
         // JSON 데이터를 multipart로 전송하기 위한 파일
+        String diaryJson = objectMapper.writeValueAsString(diaryRequest);
         diaryJsonFile = new MockMultipartFile(
                 "diary",
                 "",
                 MediaType.APPLICATION_JSON_VALUE,
-                objectMapper.writeValueAsBytes(diaryRequest)
+                diaryJson.getBytes()
         );
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("이미지 포함 다이어리 작성 성공")
+    void createDiary_WithImages_Success() throws Exception {
+        // given
+        when(diaryService.createDiary(any(), anyList(), eq("user")))
+                .thenReturn(diaryResponse);
+
+        // when & then
+        mockMvc.perform(multipart("/diaries/post")
+                        .file(diaryJsonFile)
+                        .file(imageFile1)
+                        .file(imageFile2)
+                        .with(csrf())
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.title").value("이미지 테스트 작성"))
+                .andExpect(jsonPath("$.weather").value("SUNNY"))
+                .andExpect(jsonPath("$.tags").isArray());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("이미지 없이 다이어리 작성 성공")
+    void createDiary_WithoutImages_Success() throws Exception {
+        // given
+        when(diaryService.createDiary(any(), any(), anyString()))
+                .thenReturn(diaryResponse);
+
+        // when & then
+        mockMvc.perform(multipart("/diaries/post")
+                        .file(diaryJsonFile)
+                        .with(csrf())
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.title").value("이미지 테스트 작성"));
     }
 
 }

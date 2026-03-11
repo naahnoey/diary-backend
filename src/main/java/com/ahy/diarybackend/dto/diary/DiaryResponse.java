@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 // 다이어리 응답 DTO
@@ -23,6 +24,7 @@ public class DiaryResponse {
     private String content;
     private Weather weather;
     private String weatherDescription;
+    private List<DiaryImageResponse> images;
     private Set<String> tags;
     private Long userId;
     private String username;

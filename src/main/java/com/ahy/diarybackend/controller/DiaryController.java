@@ -33,14 +33,11 @@ public class DiaryController {
 
     @PostMapping(path = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createDiary(
-            @RequestPart("diary") String diaryJson,
+            @RequestPart("diary") DiaryCreateRequest request,
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
             @AuthenticationPrincipal UserDetails userDetails    // 현재 로그인 사용자 식별
     ) {
         try {
-            // JSON 문자열을 DTO로 변환
-            DiaryCreateRequest request = objectMapper.readValue(diaryJson, DiaryCreateRequest.class);
-
             // 이미지 개수 검증
             if (images != null && images.size() > 5) {
                 return ResponseEntity.badRequest()

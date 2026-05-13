@@ -7,7 +7,7 @@ server.servlet.context-path=/api
 # ===============================
 # Database Configuration
 # ===============================
-spring.datasource.url=jdbc:postgresql://localhost:5432/diary_db
+spring.datasource.url=jdbc:postgresql://엔드포인트:5432/postgres
 spring.datasource.username=YOUR_DB_USERNAME
 spring.datasource.password=YOUR_DB_PASSWORD
 spring.datasource.driver-class-name=org.postgresql.Driver

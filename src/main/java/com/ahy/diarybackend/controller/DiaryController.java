@@ -6,6 +6,9 @@ import com.ahy.diarybackend.dto.diary.DiaryResponse;
 import com.ahy.diarybackend.service.DiaryService;
 import com.ahy.diarybackend.service.FileStorageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -22,6 +25,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+@Tag(name = "Diary API", description = "다이어리 관련 API")
 @RestController
 @RequestMapping("/diaries")
 @RequiredArgsConstructor
@@ -31,6 +35,8 @@ public class DiaryController {
     private final FileStorageService fileStorageService;
     private final ObjectMapper objectMapper;
 
+    @Operation(summary = "다이어리 작성", description = "날짜별로 다이어리 작성")
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping(path = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createDiary(
             @RequestPart("diary") DiaryCreateRequest request,
@@ -53,6 +59,7 @@ public class DiaryController {
     }
 
     // 이미지 다운로드
+    @Operation(summary = "이미지 다운로드", description = "게시글에 업로드한 이미지 서버에 저장")
     @GetMapping("/images/{fileName}")
     public ResponseEntity<Resource> downloadImage(@PathVariable String fileName) {
         try {

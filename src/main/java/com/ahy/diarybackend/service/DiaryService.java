@@ -157,7 +157,7 @@ public class DiaryService {
         return DiaryImageResponse.builder()
                 .id(image.getId())
                 .originalFileName(image.getOriginalFileName())
-                .imageUrl("/api/diaries/images/" + image.getStoredFileName())
+                .imageUrl(image.getFilePath())
                 .fileSize(image.getFileSize())
                 .contentType(image.getContentType())
                 .uploadDate(image.getUploadDate())

@@ -1,5 +1,6 @@
 package com.ahy.diarybackend.dto.diary;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Schema(description = "다이어리 이미지 업로드 시 응답 DTO")
 public class DiaryImageResponse {
 
     private Long id;

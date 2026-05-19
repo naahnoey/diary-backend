@@ -13,6 +13,22 @@ spring.datasource.password=YOUR_DB_PASSWORD
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 # ===============================
+# AWS S3 Configuration
+# ===============================
+# AWS 자격증명
+cloud.aws.credentials.access-key=YOUR_ACCESS_KEY
+cloud.aws.credentials.secret-key=YOUR_SECRET_KEY
+
+# AWS 리전
+cloud.aws.region.static=ap-northeast-2
+
+# S3 버킷
+cloud.aws.s3.bucket=your-bucket-name
+
+# CloudFormation 자동 감지 비활성화
+cloud.aws.stack.auto=false
+
+# ===============================
 # JPA/Hibernate Configuration
 # ===============================
 spring.jpa.hibernate.ddl-auto=update

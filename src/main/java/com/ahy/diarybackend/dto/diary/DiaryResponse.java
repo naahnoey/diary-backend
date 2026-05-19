@@ -1,6 +1,7 @@
 package com.ahy.diarybackend.dto.diary;
 
 import com.ahy.diarybackend.entity.Weather;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,6 +17,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Schema(description = "다이어리 작성 시 응답 DTO")
 public class DiaryResponse {
 
     private Long id;

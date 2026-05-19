@@ -5,6 +5,7 @@ import com.ahy.diarybackend.dto.diary.DiaryCreateRequest;
 import com.ahy.diarybackend.dto.diary.DiaryResponse;
 import com.ahy.diarybackend.service.DiaryService;
 import com.ahy.diarybackend.service.FileStorageService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,16 +29,19 @@ public class DiaryController {
 
     private final DiaryService diaryService;
     private final FileStorageService fileStorageService;
+    private final ObjectMapper objectMapper;
 
     @Operation(summary = "다이어리 작성", description = "날짜별로 다이어리 작성")
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping(path = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createDiary(
-            @RequestPart("diary") DiaryCreateRequest request,
+            @RequestPart("diary") String diaryJson,
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
             @AuthenticationPrincipal UserDetails userDetails    // 현재 로그인 사용자 식별
     ) {
         try {
+            DiaryCreateRequest request = objectMapper.readValue(diaryJson, DiaryCreateRequest.class);
+
             // 이미지 개수 검증
             if (images != null && images.size() > 5) {
                 return ResponseEntity.badRequest()

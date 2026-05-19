@@ -7,6 +7,9 @@ import com.ahy.diarybackend.service.DiaryService;
 import com.ahy.diarybackend.service.FileStorageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +38,20 @@ public class DiaryController {
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping(path = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createDiary(
-            @RequestPart("diary") String diaryJson,
+            @RequestPart("diary")
+            @Schema(
+                    description = "다이어리 작성 요청 JSON",
+                    example = """
+                        {
+                            "diaryDate": "2026-02-22",
+                            "title": "테스트",
+                            "content": "달력 기능을 구현해 봅시다",
+                            "weather": "SUNNY",
+                            "tags": ["여행", "서울", "맛집"]
+                        }
+                        """
+            )
+            String diaryJson,
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
             @AuthenticationPrincipal UserDetails userDetails    // 현재 로그인 사용자 식별
     ) {

@@ -5,6 +5,9 @@ import com.ahy.diarybackend.dto.diary.DiaryCreateRequest;
 import com.ahy.diarybackend.dto.diary.DiaryResponse;
 import com.ahy.diarybackend.service.DiaryService;
 import com.ahy.diarybackend.service.FileStorageService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -17,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Tag(name = "Diary API", description = "다이어리 관련 API")
 @RestController
 @RequestMapping("/diaries")
 @RequiredArgsConstructor
@@ -25,6 +29,8 @@ public class DiaryController {
     private final DiaryService diaryService;
     private final FileStorageService fileStorageService;
 
+    @Operation(summary = "다이어리 작성", description = "날짜별로 다이어리 작성")
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping(path = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createDiary(
             @RequestPart("diary") DiaryCreateRequest request,
@@ -32,6 +38,7 @@ public class DiaryController {
             @AuthenticationPrincipal UserDetails userDetails    // 현재 로그인 사용자 식별
     ) {
         try {
+            // 이미지 개수 검증
             if (images != null && images.size() > 5) {
                 return ResponseEntity.badRequest()
                         .body(new MessageResponse("이미지는 최대 5개까지 업로드 가능합니다"));
@@ -46,6 +53,7 @@ public class DiaryController {
     }
 
     // 이미지 조회 - S3 URL로 리다이렉트
+    @Operation(summary = "이미지 다운로드", description = "게시글에 업로드한 이미지 서버에 저장")
     @GetMapping("/images/{fileName}")
     public ResponseEntity<Void> downloadImage(@PathVariable String fileName) {
         try {
@@ -57,4 +65,5 @@ public class DiaryController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
 }

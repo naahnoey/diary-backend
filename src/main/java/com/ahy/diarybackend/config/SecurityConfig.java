@@ -37,8 +37,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/test/**").permitAll()
+                        .requestMatchers(
+                                "/auth/**",
+                                "/test/**",
+                                "/swagger-ui/**", // swagger 허용
+                                "/v3/api-docs/**" // swagger 허용
+                        ).permitAll()
                         .requestMatchers("/admin").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )

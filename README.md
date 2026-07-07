@@ -5,10 +5,14 @@ Spring Boot와 React를 사용한 개인 다이어리 웹 애플리케이션
 ## 기술 스택
 
 ### Backend
-- Spring Boot 4.0.1
+- Java 17
+- Spring Boot 3.2.1
+- AWS RDS (PostgreSQL 18.1)
 - Spring Security + JWT
 - Spring Data JPA
-- PostgreSQL 18.1
+
+### Server
+- AWS EC2 Ubuntu
 
 ## 주요 기능
 

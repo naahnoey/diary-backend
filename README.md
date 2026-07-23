@@ -29,3 +29,9 @@ Spring Boot와 React를 사용한 개인 다이어리 웹 애플리케이션
 - [ ] 태그 기능
   - [ ] 태그별 게시글 조회
 - [ ] 날짜별 필터링
+
+## CI/CD
+- [X] Jenkins를 이용한 자동 빌드
+- [X] Docker 이미지 자동 생성
+- [ ] GitHub Push를 트리거로 Jenkins Pipeline 실행
+- [ ] 기존 컨테이너 종료 후 신규 컨테이너 배포

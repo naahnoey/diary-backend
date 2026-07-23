@@ -29,15 +29,18 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh '''
-                    docker stop diary-backend || true
-                    docker rm diary-backend || true
-                    docker run -d \
-                        --name diary-backend \
-                        -p 8080:8080 \
-                        --restart always \
-                        diary-backend
-                '''
+                withCredentials([file(credentialsId: 'app-env-file', variable: 'ENV_FILE')]) {
+                    sh '''
+                        docker stop diary-backend || true
+                        docker rm diary-backend || true
+                        docker run -d \
+                            --name diary-backend \
+                            -p 8080:8080 \
+                            --env-file $ENV_FILE \
+                            --restart always \
+                            diary-backend
+                    '''
+                }
             }
         }
     }

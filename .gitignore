@@ -12,6 +12,9 @@ build/
 *.ear
 target/
 
+# wrapper jar파일은 예외
+!gradle/wrapper/gradle-wrapper.jar
+
 ### STS ###
 .apt_generated
 .classpath

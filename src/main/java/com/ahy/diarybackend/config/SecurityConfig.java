@@ -41,6 +41,7 @@ public class SecurityConfig {
                                 "/auth/**",
                                 "/test/**",
                                 "/swagger-ui.html", // swagger 허용
+                                "/swagger-ui/**", // swagger 허용
                                 "/v3/api-docs/**" // swagger 허용
                         ).permitAll()
                         .requestMatchers("/admin").hasAuthority("ADMIN")

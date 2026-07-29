@@ -1,6 +1,7 @@
 package com.ahy.diarybackend.repository;
 
 import com.ahy.diarybackend.entity.Diary;
+import com.ahy.diarybackend.entity.Tag;
 import com.ahy.diarybackend.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,5 +42,11 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
     // 특정 월의 다이어리가 있는 날짜 조회 (달력 표시용)
     List<Diary> findByUserAndDiaryDateBetween(User user, LocalDate startDate, LocalDate endDate);
+
+    // 특정 태그와 함께 작성된 다이어리 조회
+    List<Diary> findByTags_Id(Long tagId);
+
+    // 특정 태그와 함께 작성된 다이어리 개수
+    long countByTags_Id(Long tagId);
 
 }

@@ -130,6 +130,7 @@ public class DiaryController {
 
     // 다이어리 수정 (이미지 변경 X)
     @PutMapping(path = "/update/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> updateDiaryJsonOnly(
             @PathVariable Long id,
             @Schema(
@@ -155,6 +156,22 @@ public class DiaryController {
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(new MessageResponse("다이어리 수정에 실패했습니다: " + e.getMessage()));
+        }
+    }
+
+    // 다이어리 삭제
+    @DeleteMapping(path = "/{id}")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<?> deleteDiary(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        try {
+            diaryService.deleteDiary(id, userDetails.getUsername());
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponse("다이어리 삭제에 실패했습니다: " + e.getMessage()));
         }
     }
 

@@ -12,6 +12,7 @@ import com.ahy.diarybackend.repository.DiaryRepository;
 import com.ahy.diarybackend.repository.TagRepository;
 import com.ahy.diarybackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -125,14 +126,7 @@ public class DiaryService {
                     .filter(img -> deletedImageIds.contains(img.getId()))
                     .collect(Collectors.toList());
 
-            System.out.println(deletedImageIds.size());
-
-            for (DiaryImage image : imagesToDelete) {
-                // 실제 파일 삭제
-                fileStorageService.deleteFile(image.getStoredFileName());
-                // 연관관계 제거 (orphanRemoval에 의해 DB에서도 삭제됨)
-                diary.removeImage(image);
-            }
+            deleteImage(imagesToDelete, diary);
         }
 
         // 새 이미지 추가
@@ -156,6 +150,26 @@ public class DiaryService {
         Diary updatedDiary = diaryRepository.save(diary);
 
         return convertToResponse(updatedDiary);
+    }
+
+    // 다이어리 삭제
+    @Transactional
+    public void deleteDiary(Long diaryId, String username) throws IOException {
+        // 사용자 조회
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
+
+        // 다이어리 조회 (본인 소유인지 확인)
+        Diary diary = diaryRepository.findByIdAndUser(diaryId, user)
+                .orElseThrow(() -> new RuntimeException("다이어리를 찾을 수 없거나 삭제 권한이 없습니다."));
+
+        // 이미지 삭제 처리
+        List<DiaryImage> images = diary.getImages();
+        if (images != null && !images.isEmpty()) {
+            deleteImage(images, diary);
+        }
+
+        diaryRepository.delete(diary);
     }
 
     // 이미지 저장
@@ -183,6 +197,16 @@ public class DiaryService {
                 .contentType(file.getContentType())
                 .diary(diary)
                 .build();
+    }
+
+    // 이미지 삭제
+    private void deleteImage(List<DiaryImage> deletedImages, Diary diary) throws IOException {
+        for (DiaryImage image : deletedImages) {
+            // 실제 파일 삭제
+            fileStorageService.deleteFile(image.getStoredFileName());
+            // 연관관계 제거 (orphanRemoval에 의해 DB에서도 삭제됨)
+            diary.removeImage(image);
+        }
     }
 
     // 태그 처리 - 기존 태그는 재사용, 없으면 새로 생성

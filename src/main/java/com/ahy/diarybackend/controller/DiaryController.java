@@ -3,6 +3,7 @@ package com.ahy.diarybackend.controller;
 import com.ahy.diarybackend.dto.auth.MessageResponse;
 import com.ahy.diarybackend.dto.diary.DiaryCreateRequest;
 import com.ahy.diarybackend.dto.diary.DiaryResponse;
+import com.ahy.diarybackend.dto.diary.DiaryUpdateRequest;
 import com.ahy.diarybackend.service.DiaryService;
 import com.ahy.diarybackend.service.FileStorageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collections;
 import java.util.List;
 
 @Tag(name = "Diary API", description = "다이어리 관련 API")
@@ -34,6 +37,7 @@ public class DiaryController {
     private final FileStorageService fileStorageService;
     private final ObjectMapper objectMapper;
 
+    // 다이어리 작성
     @Operation(summary = "다이어리 작성", description = "날짜별로 다이어리 작성")
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping(path = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -83,6 +87,83 @@ public class DiaryController {
                     .build();
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // 다이어리 수정 (이미지 변경 O)
+    @Operation(summary = "다이어리 작성", description = "날짜별로 다이어리 작성")
+    @SecurityRequirement(name = "bearerAuth")
+    @PutMapping(path = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateDiary(
+            @PathVariable Long id,
+            @RequestPart("diary")
+            @Schema(
+                    description = "다이어리 수정 요청 JSON",
+                    example = """
+                        {
+                            "diaryDate": "2026-02-22",
+                            "title": "테스트",
+                            "content": "달력 기능을 구현해 봅시다",
+                            "weather": "SUNNY",
+                            "tags": ["여행", "서울", "맛집"]
+                        }
+                        """
+            )
+            String diaryJson,
+            @RequestPart(value = "images", required = false) List<MultipartFile> newImages,
+            @RequestPart(value = "deleteImageIds", required = false) String deleteImageIdsJson,
+            @AuthenticationPrincipal UserDetails userDetails    // 현재 로그인 사용자 식별
+    ) {
+        try {
+            DiaryUpdateRequest request = objectMapper.readValue(diaryJson, DiaryUpdateRequest.class);
+
+            // 삭제할 이미지 ID 목록 파싱 (없으면 빈 리스트)
+            List<Long> deleteImageIds = (deleteImageIdsJson != null && !deleteImageIdsJson.isBlank())
+                    ? objectMapper.readValue(deleteImageIdsJson, objectMapper.getTypeFactory()
+                    .constructCollectionType(List.class, Long.class))
+                    : Collections.emptyList();
+
+            // 새로 추가한 이미지 개수 검증
+            if (newImages != null && newImages.size() > 5) {
+                return ResponseEntity.badRequest()
+                        .body(new MessageResponse("이미지는 최대 5개까지 업로드 가능합니다."));
+            }
+
+            DiaryResponse response = diaryService.updateDiary(id, request, newImages, deleteImageIds, userDetails.getUsername());
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponse("다이어리 수정에 실패했습니다: " + e.getMessage()));
+        }
+    }
+
+    // 다이어리 수정 (이미지 변경 X)
+    @PutMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateDiaryJsonOnly(
+            @PathVariable Long id,
+            @Schema(
+                    description = "다이어리 수정 요청 JSON",
+                    example = """
+                        {
+                            "diaryDate": "2026-02-22",
+                            "title": "테스트",
+                            "content": "달력 기능을 구현해 봅시다",
+                            "weather": "SUNNY",
+                            "tags": ["여행", "서울", "맛집"]
+                        }
+                        """
+            )
+            @Valid @RequestBody DiaryUpdateRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        try {
+            DiaryResponse response = diaryService.updateDiary(
+                    id, request, null, Collections.emptyList(), userDetails.getUsername()
+            );
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponse("다이어리 수정에 실패했습니다: " + e.getMessage()));
         }
     }
 

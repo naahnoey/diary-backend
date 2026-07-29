@@ -3,6 +3,7 @@ package com.ahy.diarybackend.service;
 import com.ahy.diarybackend.dto.diary.DiaryCreateRequest;
 import com.ahy.diarybackend.dto.diary.DiaryImageResponse;
 import com.ahy.diarybackend.dto.diary.DiaryResponse;
+import com.ahy.diarybackend.dto.diary.DiaryUpdateRequest;
 import com.ahy.diarybackend.entity.Diary;
 import com.ahy.diarybackend.entity.DiaryImage;
 import com.ahy.diarybackend.entity.Tag;
@@ -76,6 +77,82 @@ public class DiaryService {
 
         // 응답 DTO 변환
         return convertToResponse(savedDiary);
+    }
+
+    @Transactional
+    public DiaryResponse updateDiary(
+            Long diaryId,
+            DiaryUpdateRequest request,
+            List<MultipartFile> newImages,
+            List<Long> deleteImageIds,
+            String username
+    ) throws IOException {
+        // 사용자 조회
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
+
+        // 다이어리 조회 (본인 소유인지 확인)
+        Diary diary = diaryRepository.findByIdAndUser(diaryId, user)
+                .orElseThrow(() -> new RuntimeException("다이어리를 찾을 수 없거나 수정 권한이 없습니다."));
+
+        // 날짜가 변경되었다면 중복 체크
+        if (!diary.getDiaryDate().equals(request.getDiaryDate())) {
+            boolean existsForDate = diaryRepository.existsByUserAndDiaryDate(user, request.getDiaryDate());
+            if (existsForDate) {
+                throw new RuntimeException("해당 날짜에 이미 다이어리가 작성되어 있습니다.");
+            }
+        }
+
+        // 기본 정보 수정
+        diary.updateContent(
+                request.getDiaryDate(),
+                request.getTitle(),
+                request.getContent(),
+                request.getWeather()
+        );
+
+        // 태그 갱신 (기존 태그 모두 제거 후 새로 추가)
+        diary.clearTags();
+        if (request.getTags() != null && !request.getTags().isEmpty()) {
+            Set<Tag> tags = processTags(request.getTags());
+            tags.forEach(diary::addTag);
+        }
+
+        // 이미지 삭제 처리
+        if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
+            List<DiaryImage> imagesToDelete = diary.getImages().stream()
+                    .filter(img -> deleteImageIds.contains(img.getId()))
+                    .collect(Collectors.toList());
+
+            for (DiaryImage image : imagesToDelete) {
+                // 실제 파일 삭제
+                fileStorageService.deleteFile(image.getStoredFileName());
+                // 연관관계 제거 (orphanRemoval에 의해 DB에서도 삭제됨)
+                diary.removeImage(image);
+            }
+        }
+
+        // 새 이미지 추가
+        if (newImages != null && !newImages.isEmpty()) {
+            // 최종 이미지 개수 검증 (기존 유지 + 새로 추가)
+            int totalImageCount = diary.getImages().size() + (int) newImages.stream()
+                    .filter(f -> !f.isEmpty())
+                    .count();
+            if (totalImageCount > 5) {
+                throw new IllegalArgumentException("이미지는 최대 5개까지 업로드 가능합니다");
+            }
+
+            for (MultipartFile image : newImages) {
+                if (!image.isEmpty()) {
+                    DiaryImage diaryImage = saveImage(image, diary);
+                    diary.addImage(diaryImage);
+                }
+            }
+        }
+
+        Diary updatedDiary = diaryRepository.save(diary);
+
+        return convertToResponse(updatedDiary);
     }
 
     // 이미지 저장

@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 // 다이어리 수정 요청 DTO
@@ -37,5 +38,8 @@ public class DiaryUpdateRequest {
     @Schema(description = "해시태그", example = "[\"여행\", \"서울\", \"맛집\", \"기분굿\"]")
     @Size(max = 10, message = "태그는 최대 10개까지")
     private Set<String> tags;
+
+    @Schema(description = "삭제될 이미지", example = "[3, 4]")
+    private List<Long> deletedImageIds;
 
 }

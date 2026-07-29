@@ -84,7 +84,6 @@ public class DiaryService {
             Long diaryId,
             DiaryUpdateRequest request,
             List<MultipartFile> newImages,
-            List<Long> deleteImageIds,
             String username
     ) throws IOException {
         // 사용자 조회
@@ -119,10 +118,14 @@ public class DiaryService {
         }
 
         // 이미지 삭제 처리
-        if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
+        List<Long> deletedImageIds = request.getDeletedImageIds();
+
+        if (deletedImageIds != null && !deletedImageIds.isEmpty()) {
             List<DiaryImage> imagesToDelete = diary.getImages().stream()
-                    .filter(img -> deleteImageIds.contains(img.getId()))
+                    .filter(img -> deletedImageIds.contains(img.getId()))
                     .collect(Collectors.toList());
+
+            System.out.println(deletedImageIds.size());
 
             for (DiaryImage image : imagesToDelete) {
                 // 실제 파일 삭제

@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,6 +23,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "Diary API", description = "다이어리 관련 API")
@@ -160,6 +162,7 @@ public class DiaryController {
     }
 
     // 다이어리 삭제
+    @Operation(summary = "다이어리 삭제", description = "id로 다이어리 삭제")
     @DeleteMapping(path = "/{id}")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> deleteDiary(
@@ -172,6 +175,41 @@ public class DiaryController {
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(new MessageResponse("다이어리 삭제에 실패했습니다: " + e.getMessage()));
+        }
+    }
+
+    // ID로 다이어리 상세 조회
+    @Operation(summary = "다이어리 조회 - id", description = "id로 다이어리 조회")
+    @GetMapping("/{id}")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<?> getDiaryById(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        try {
+            DiaryResponse response = diaryService.getDiaryById(id, userDetails.getUsername());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponse("다이어리 조회에 실패했습니다: " + e.getMessage()));
+        }
+    }
+
+    // 특정 날짜의 다이어리 조회 (캘린더에서 날짜 클릭 시 사용)
+    @Operation(summary = "다이어리 조회 - 날짜", description = "날짜로 다이어리 조회")
+    @GetMapping("/date/{date}")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<?> getDiaryByDate(
+            @Schema(description = "날짜", example = "2026-07-30")
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        try {
+            DiaryResponse response = diaryService.getDiaryByDate(date, userDetails.getUsername());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new MessageResponse(e.getMessage()));
         }
     }
 

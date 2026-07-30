@@ -12,13 +12,13 @@ import com.ahy.diarybackend.repository.DiaryRepository;
 import com.ahy.diarybackend.repository.TagRepository;
 import com.ahy.diarybackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -207,6 +207,30 @@ public class DiaryService {
             // 연관관계 제거 (orphanRemoval에 의해 DB에서도 삭제됨)
             diary.removeImage(image);
         }
+    }
+
+    // ID로 단건 조회 (상세 조회)
+    @Transactional(readOnly = true)
+    public DiaryResponse getDiaryById(Long diaryId, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
+
+        Diary diary = diaryRepository.findByIdAndUser(diaryId, user)
+                .orElseThrow(() -> new RuntimeException("다이어리를 찾을 수 없습니다."));
+
+        return convertToResponse(diary);
+    }
+
+    // 특정 날짜로 단건 조회 (캘린더에서 날짜 클릭 시)
+    @Transactional(readOnly = true)
+    public DiaryResponse getDiaryByDate(LocalDate date, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
+
+        Diary diary = diaryRepository.findByUserAndDiaryDate(user, date)
+                .orElseThrow(() -> new RuntimeException("해당 날짜에 작성된 다이어리가 없습니다."));
+
+        return convertToResponse(diary);
     }
 
     // 태그 처리 - 기존 태그는 재사용, 없으면 새로 생성

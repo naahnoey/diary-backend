@@ -104,4 +104,12 @@ public class Diary {
         }
     }
 
+    // 다이어리 내용 수정
+    public void updateContent(LocalDate diaryDate, String title, String content, Weather weather) {
+        this.diaryDate = diaryDate;
+        this.title = title;
+        this.content = content;
+        this.weather = weather;
+    }
+
 }

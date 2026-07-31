@@ -12,6 +12,8 @@ import com.ahy.diarybackend.repository.DiaryRepository;
 import com.ahy.diarybackend.repository.TagRepository;
 import com.ahy.diarybackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -231,6 +234,36 @@ public class DiaryService {
                 .orElseThrow(() -> new RuntimeException("해당 날짜에 작성된 다이어리가 없습니다."));
 
         return convertToResponse(diary);
+    }
+
+    // 특정 월의 다이어리 목록 조회 (캘린더 화면 표시용)
+    @Transactional(readOnly = true)
+    public List<DiaryResponse> getMonthlyDiaries(int year, int month, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
+
+        YearMonth yearMonth = YearMonth.of(year, month);
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+
+        List<Diary> diaries = diaryRepository.findByUserAndDiaryDateBetweenOrderByDiaryDateDesc(
+                user, startDate, endDate
+        );
+
+        return diaries.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
+    // 전체 다이어리 페이징 목록 조회
+    @Transactional(readOnly = true)
+    public Page<DiaryResponse> getDiaries(String username, Pageable pageable) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
+
+        Page<Diary> diaries = diaryRepository.findByUserOrderByDiaryDateDesc(user, pageable);
+
+        return diaries.map(this::convertToResponse);
     }
 
     // 태그 처리 - 기존 태그는 재사용, 없으면 새로 생성

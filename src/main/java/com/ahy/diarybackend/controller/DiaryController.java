@@ -13,6 +13,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -210,6 +213,41 @@ public class DiaryController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new MessageResponse(e.getMessage()));
+        }
+    }
+
+    // 특정 월의 다이어리 목록 조회 (캘린더 화면 표시용)
+    @Operation(summary = "다이어리 월별 목록 조회", description = "월별로 다이어리 목록 조회")
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/calendar")
+    public ResponseEntity<?> getMonthlyDiaries(
+            @RequestParam int year,
+            @RequestParam int month,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        try {
+            List<DiaryResponse> responses = diaryService.getMonthlyDiaries(year, month, userDetails.getUsername());
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponse("다이어리 목록 조회에 실패했습니다: " + e.getMessage()));
+        }
+    }
+
+    // 전체 다이어리 페이징 목록 조회
+    @Operation(summary = "전체 다이어리 조회")
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping
+    public ResponseEntity<?> getDiaries(
+            @PageableDefault(size = 10) Pageable pageable,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        try {
+            Page<DiaryResponse> responses = diaryService.getDiaries(userDetails.getUsername(), pageable);
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponse("다이어리 목록 조회에 실패했습니다: " + e.getMessage()));
         }
     }
 

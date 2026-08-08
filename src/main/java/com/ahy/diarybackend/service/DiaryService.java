@@ -4,10 +4,7 @@ import com.ahy.diarybackend.dto.diary.DiaryCreateRequest;
 import com.ahy.diarybackend.dto.diary.DiaryImageResponse;
 import com.ahy.diarybackend.dto.diary.DiaryResponse;
 import com.ahy.diarybackend.dto.diary.DiaryUpdateRequest;
-import com.ahy.diarybackend.entity.Diary;
-import com.ahy.diarybackend.entity.DiaryImage;
-import com.ahy.diarybackend.entity.Tag;
-import com.ahy.diarybackend.entity.User;
+import com.ahy.diarybackend.entity.*;
 import com.ahy.diarybackend.repository.DiaryRepository;
 import com.ahy.diarybackend.repository.TagRepository;
 import com.ahy.diarybackend.repository.UserRepository;
@@ -262,6 +259,24 @@ public class DiaryService {
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
 
         Page<Diary> diaries = diaryRepository.findByUserOrderByDiaryDateDesc(user, pageable);
+
+        return diaries.map(this::convertToResponse);
+    }
+
+    // 다이어리 검색 (검색 범위를 SearchType으로 지정)
+    @Transactional(readOnly = true)
+    public Page<DiaryResponse> searchDiaries(SearchType searchType, String keyword, String username, Pageable pageable) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
+
+        Page<Diary> diaries = switch (searchType) {
+            case TITLE -> diaryRepository.findByUserAndTitleContainingIgnoreCaseOrderByDiaryDateDesc(
+                    user, keyword, pageable);
+            case CONTENT -> diaryRepository.findByUserAndContentContainingIgnoreCaseOrderByDiaryDateDesc(
+                    user, keyword, pageable);
+            case TITLE_CONTENT -> diaryRepository.findByUserAndTitleContainingIgnoreCaseOrContentContainingIgnoreCaseOrderByDiaryDateDesc(
+                    user, keyword, keyword, pageable);
+        };
 
         return diaries.map(this::convertToResponse);
     }

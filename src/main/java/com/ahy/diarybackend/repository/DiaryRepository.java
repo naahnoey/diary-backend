@@ -44,7 +44,7 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
     List<Diary> findByUserAndDiaryDateBetween(User user, LocalDate startDate, LocalDate endDate);
 
     // 특정 태그와 함께 작성된 다이어리 조회
-    List<Diary> findByTags_Id(Long tagId);
+    Page<Diary> findByUserAndTags_Id(User user, Long tagId, Pageable pageable);
 
     // 특정 태그와 함께 작성된 다이어리 개수
     long countByTags_Id(Long tagId);

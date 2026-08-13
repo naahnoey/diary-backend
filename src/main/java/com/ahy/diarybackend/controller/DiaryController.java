@@ -271,4 +271,21 @@ public class DiaryController {
         }
     }
 
+    // 해시태그로 다이어리 검색
+    @Operation(summary = "다이어리 조회 - 해시태그", description = "해시태그로 다이어리 조회")
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/list/{tagId}")
+    public ResponseEntity<?> searchDiaries(
+            @PathVariable Long tagId,
+            @PageableDefault(size = 10) Pageable pageable,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        try {
+            Page<DiaryResponse> responses = diaryService.getDiariesByTag(tagId, userDetails.getUsername(), pageable);
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponse("다이어리 검색에 실패했습니다: " + e.getMessage()));
+        }
+    }
 }

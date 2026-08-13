@@ -281,6 +281,17 @@ public class DiaryService {
         return diaries.map(this::convertToResponse);
     }
 
+    // 특정 태그로 다이어리 조회
+    @Transactional(readOnly = true)
+    public Page<DiaryResponse> getDiariesByTag(Long tagId, String username, Pageable pageable) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
+
+        Page<Diary> diaries = diaryRepository.findByUserAndTags_Id(user, tagId, pageable);
+
+        return diaries.map(this::convertToResponse);
+    }
+
     // 태그 처리 - 기존 태그는 재사용, 없으면 새로 생성
     private Set<Tag> processTags(Set<String> tagNames) {
         Set<Tag> tags = new HashSet<>();

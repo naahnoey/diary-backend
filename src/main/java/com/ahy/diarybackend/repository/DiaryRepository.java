@@ -44,9 +44,18 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
     List<Diary> findByUserAndDiaryDateBetween(User user, LocalDate startDate, LocalDate endDate);
 
     // 특정 태그와 함께 작성된 다이어리 조회
-    List<Diary> findByTags_Id(Long tagId);
+    Page<Diary> findByUserAndTags_Id(User user, Long tagId, Pageable pageable);
 
     // 특정 태그와 함께 작성된 다이어리 개수
     long countByTags_Id(Long tagId);
+
+    // 제목으로 검색 (대소문자 구분 없음, 페이징)
+    Page<Diary> findByUserAndTitleContainingIgnoreCaseOrderByDiaryDateDesc(User user, String title, Pageable pageable);
+
+    // 내용으로 검색
+    Page<Diary> findByUserAndContentContainingIgnoreCaseOrderByDiaryDateDesc(User user, String content, Pageable pageable);
+
+    // 제목 또는 내용으로 검색 (OR 조건, 대소문자 구분 없음, 페이징)
+    Page<Diary> findByUserAndTitleContainingIgnoreCaseOrContentContainingIgnoreCaseOrderByDiaryDateDesc(User user, String title, String content, Pageable pageable);
 
 }
